@@ -1,7 +1,5 @@
 !define APP "Total Uninstall"
 
-SetCompressor /SOLID lzma
-SetCompressorDictSize 32
 !include "x64.nsh"
 !include TextFunc.nsh
 !insertmacro GetParameters
@@ -12,6 +10,8 @@ WindowIcon Off
 SilentInstall Silent
 AutoCloseWindow True
 RequestExecutionLevel admin
+SetCompressor /SOLID lzma
+SetCompressorDictSize 32
 
 Name "${APP} set"
 OutFile "..\TU_Loader.exe"
@@ -21,9 +21,8 @@ Section "Main"
 SetOutPath "$EXEDIR\"
 CreateDirectory "$EXEDIR\Data"
 ifFileExists "$EXEDIR\Data\Program Options.xml" checkhkcu 0
-System::Call "Kernel32::GetSystemDefaultLangID(v ..) i .s"
+System::Call `kernel32::GetUserDefaultUILanguage() i.s`
 Pop $3
-intop $3 $3 & 0xffff
 StrCmp $3 "2052" 0 +3
 StrCpy $4 "Chinese-Simplified"
 goto +3
@@ -34,7 +33,7 @@ FileWrite $5 '<?xml version="1.0" encoding="utf-8"?>$\n'
 FileWrite $5 "<TotalUninstall><Options><Interface><Language>$4</Language></Interface></Options></TotalUninstall>$\n"
 FileClose $5
 checkhkcu:
-  StrCpy $found 0
+StrCpy $found 0
     ${LineFind} "$EXEDIR\Data\Program Options.xml" "/NUL" "1:-1" "GrepFunc"
     ${if} $found = 1
 ${textreplace::ReplaceInFile} "$EXEDIR\Data\Program Options.xml" "$EXEDIR\Data\Program Options.xml" "<Key>HKEY_USERS</Key>" "<Key>HKEY_CURRENT_USER</Key>" "/S=1" $8
